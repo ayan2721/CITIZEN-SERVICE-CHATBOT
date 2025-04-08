@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Service Chatbot</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .chat-container {
+            background: white;
+            width: 60%;
+            height: 80vh;
+            max-width: 800px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background-color: #0077b6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        #chatbox {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #eef3f8;
+        }
+        
+        .bot-message,
+        .user-message {
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 70%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .bot-message {
+            background: #d1ecf1;
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background: #c8e6c9;
+            align-self: flex-end;
+        }
+        
+        .typing-indicator {
+            align-self: flex-start;
+            font-style: italic;
+            color: #555;
+            padding: 10px;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .chat-footer {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background: white;
+        }
+        
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            outline: none;
+        }
+        
+        button {
+            padding: 12px 20px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 8px;
+            background-color: #0077b6;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #005f8a;
+        }
+        
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #0077b6;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">🧑‍🤝‍🧑 Citizen Service Assistant</div>
+        <div id="chatbox">
+            <div class="bot-message">
+                <img src="https://cdn-icons-png.flaticon.com/128/33/33308.png" class="message-avatar" alt="Therapist Avatar"> Hello! How may I help you?
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="userInput" placeholder="Type your message here...">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+    <footer>
+        &copy; Developed By - Ved, Ayan, Ayush 2025 Citizen Service Chatbot. All rights reserved.
+    </footer>
+    <script>
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput').value.trim();
+            if (!userInput) return;
+
+            appendMessage(userInput, 'user');
+            document.getElementById('userInput').value = '';
+
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.textContent = 'Typing...';
+            document.getElementById('chatbox').appendChild(typingIndicator);
+            typingIndicator.scrollIntoView({
+                behavior: 'smooth'
+            });
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: userInput
+                    })
+                });
+
+                const result = await response.json();
+                document.getElementById('chatbox').removeChild(typingIndicator);
+                appendMessage(result.reply, 'bot');
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('chatbox').removeChild(typingIndicator);
+                appendMessage("I'm having trouble responding right now. 🛠️", 'bot');
+            }
+        }
+
+        function appendMessage(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.className = sender === 'bot' ? 'bot-message' : 'user-message';
+
+            if (sender === 'bot') {
+                messageElement.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/128/33/33308.png" class="message-avatar" alt="Therapist Avatar"> ${message}`;
+            } else {
+                messageElement.textContent = message;
+            }
+
+            document.getElementById('chatbox').appendChild(messageElement);
+            messageElement.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+
+</html>
